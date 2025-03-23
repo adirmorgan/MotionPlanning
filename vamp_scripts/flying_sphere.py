@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import numpy as np
 from fire import Fire
 
 import vamp
@@ -6,6 +8,16 @@ import vamp
 robot_initial_pos = [23.661283493041992, 7.7295989990234375, 1.866841197013855]
 goal_pos = [-23.25229835510254, -9.870399475097656, 2.1933717727661133]
 
+class ConstantNeighborParams(object):
+    def max_neighbors(self): # real signature unknown; NOTE: unreliably restored from __doc__
+        return self.k
+
+    def neighbor_radius(self): # real signature unknown; NOTE: unreliably restored from __doc__
+        return self.r
+
+    def __init__(self, k):
+        self.k = k
+        self.r = np.inf
 
 def main(
     visualize: bool = False,
@@ -31,7 +43,8 @@ def main(
     vamp.sphere.set_highs([x, y, z])
     vamp.sphere.set_radius(radius)
 
-    settings = vamp.PRMSettings(vamp.PRMNeighborParams(vamp.sphere.dimension(), vamp.sphere.space_measure()))
+    # settings = vamp.PRMSettings(vamp.PRMNeighborParams(vamp.sphere.dimension(), vamp.sphere.space_measure()))
+    settings = vamp.PRMSettings(ConstantNeighborParams(10))
     settings.max_iterations = iterations
 
     sampler = getattr(vamp.sphere, sampler_name)()
