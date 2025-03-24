@@ -13,46 +13,7 @@ def isStateValid(state):
     # to convert state to an SE2State.)
     return state.getX() < .6
 
-def planWithSimpleSetup():
-    # create an SE2 state space
-    space = ob.SE2StateSpace()
-
-    # set lower and upper bounds
-    bounds = ob.RealVectorBounds(2)
-    bounds.setLow(-1)
-    bounds.setHigh(1)
-    space.setBounds(bounds)
-
-    # create a simple setup object
-    ss = og.SimpleSetup(space)
-    ss.setStateValidityChecker(ob.StateValidityCheckerFn(isStateValid))
-
-    start = ob.State(space)
-    # we can pick a random start state...
-    start.random()
-    # ... or set specific values
-    start().setX(.5)
-
-    goal = ob.State(space)
-    # we can pick a random goal state...
-    goal.random()
-    # ... or set specific values
-    goal().setX(-.5)
-
-    ss.setStartAndGoalStates(start, goal)
-
-    # this will automatically choose a default planner with
-    # default parameters
-    solved = ss.solve(1.0)
-
-    if solved:
-        # try to shorten the path
-        ss.simplifySolution()
-        # print the simplified path
-        print(ss.getSolutionPath())
-
-
-def planTheHardWay():
+def PlanSE2(display_solution=True):
     # create an SE2 state space
     space = ob.SE2StateSpace()
 
@@ -76,6 +37,8 @@ def planTheHardWay():
     goal = ob.State(space)
     goal.random()
 
+    print(f"start:\n{start.__str__()}\ngoal:\n{goal.__str__()}")
+
     # create a problem instance
     pdef = ob.ProblemDefinition(si)
 
@@ -85,7 +48,7 @@ def planTheHardWay():
     # create a planner for the defined space
     # planner = og.RRTConnect(si)
     planner = og.PRM(si)
-    planner.setMaxNearestNeighbors(50)
+    planner.setMaxNearestNeighbors(3)
 
     # set the problem we are trying to solve for the planner
     planner.setProblemDefinition(pdef)
@@ -108,11 +71,14 @@ def planTheHardWay():
         path = pdef.getSolutionPath()
         print("Found solution:\n%s" % path)
 
+        if display_solution:
+            DisplayTools.display_solution_path_SE2(path)
+            planer_data = ob.PlannerData(si)
+            planner.getPlannerData(planer_data)
+            DisplayTools.display_roadmap_graph(planer_data)
     else:
         print("No solution found")
 
 
 if __name__ == "__main__":
-    # planWithSimpleSetup()
-    # print("")
-    planTheHardWay()
+    PlanSE2()
